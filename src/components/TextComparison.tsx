@@ -95,8 +95,11 @@ export function TextComparison({ originalText, suggestedText }: TextComparisonPr
         <div className="mb-3">
           <h4 className="font-medium text-foreground flex items-center gap-2">
             <div className="w-3 h-3 bg-added rounded-full"></div>
-            Sugestão da IA
+            Sugestão da IA (via n8n)
           </h4>
+          <p className="text-xs text-muted-foreground mt-1">
+            Resultado processado pelo webhook
+          </p>
         </div>
         <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto">
           <div className="whitespace-pre-wrap font-mono">
@@ -104,6 +107,16 @@ export function TextComparison({ originalText, suggestedText }: TextComparisonPr
           </div>
         </div>
       </Card>
+
+      <div className="lg:col-span-2 mt-4">
+        <Card className="p-4 bg-yellow/10 border-yellow">
+          <h4 className="font-medium text-foreground mb-2">Resposta do Webhook n8n:</h4>
+          <div className="bg-background rounded p-3 border text-sm font-mono">
+            <div className="text-muted-foreground mb-1">Resultado processado:</div>
+            <div className="text-foreground">{suggestedText}</div>
+          </div>
+        </Card>
+      </div>
 
       <div className="lg:col-span-2 mt-4">
         <Card className="p-4 bg-muted/50">

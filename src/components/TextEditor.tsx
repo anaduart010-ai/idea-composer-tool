@@ -102,12 +102,18 @@ export function TextEditor({ className }: TextEditorProps) {
       }
 
       const result = await response.json();
-      setAiSuggestion(result.suggestion || result.text || 'Nenhuma sugestão retornada');
+      console.log('Resposta do webhook:', result); // Debug log
+      
+      // Captura a resposta do webhook - tenta vários campos possíveis
+      const aiResponse = result.output || result.suggestion || result.text || result.response || 'Nenhuma sugestão retornada';
+      console.log('Resultado capturado:', aiResponse); // Debug log
+      
+      setAiSuggestion(aiResponse);
       setShowComparison(true);
       
       toast({
         title: "Análise concluída",
-        description: "A IA analisou o texto e sugeriu melhorias.",
+        description: `IA processou o texto via n8n. Resultado: "${aiResponse.substring(0, 50)}${aiResponse.length > 50 ? '...' : ''}"`,
       });
     } catch (error) {
       toast({
