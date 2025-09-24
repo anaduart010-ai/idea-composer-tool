@@ -13,7 +13,8 @@ import {
   Upload, 
   Copy, 
   Check, 
-  X 
+  X,
+  Sparkles 
 } from 'lucide-react';
 import { TextComparison } from './TextComparison';
 import { ConfigModal } from './ConfigModal';
@@ -188,8 +189,8 @@ export function TextEditor({ className }: TextEditorProps) {
                 className="w-8 h-8 object-contain" 
               />
               <div>
-                <h1 className="text-lg font-semibold text-foreground">Editor de Texto IA</h1>
-                <p className="text-xs text-muted-foreground">Análise inteligente com n8n</p>
+                <h1 className="text-lg font-semibold text-foreground">Editor de FAQ</h1>
+                <p className="text-xs text-muted-foreground">crie, analise e edite</p>
               </div>
             </div>
             
@@ -233,8 +234,8 @@ export function TextEditor({ className }: TextEditorProps) {
                 disabled={isAnalyzing}
                 className="bg-primary hover:bg-button-hover"
               >
-                <Brain className="w-4 h-4 mr-2" />
-                {isAnalyzing ? 'Analisando...' : 'Analisar com IA'}
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isAnalyzing ? 'Revisando...' : 'Revise com IA'}
               </Button>
             </div>
           </div>
