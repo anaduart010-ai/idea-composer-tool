@@ -13,6 +13,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'work-sans': ['Work Sans', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -47,6 +50,21 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Extended palette colors
+        yellow: "hsl(var(--yellow))",
+        "yellow-light": "hsl(var(--yellow-light))",
+        green: "hsl(var(--green))",
+        pink: "hsl(var(--pink))",
+        orange: "hsl(var(--orange))",
+        rose: "hsl(var(--rose))",
+        // Editor specific colors
+        "editor-background": "hsl(var(--editor-background))",
+        "toolbar-background": "hsl(var(--toolbar-background))",
+        "button-hover": "hsl(var(--button-hover))",
+        added: "hsl(var(--added))",
+        "added-text": "hsl(var(--added-text))",
+        removed: "hsl(var(--removed))",
+        "removed-text": "hsl(var(--removed-text))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
