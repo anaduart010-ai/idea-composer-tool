@@ -30,7 +30,7 @@ export function TextEditor({ className }: TextEditorProps) {
   const [aiSuggestion, setAiSuggestion] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
-  const [webhookUrl, setWebhookUrl] = useState('');
+  const [webhookUrl, setWebhookUrl] = useState('https://analu99.app.n8n.cloud/webhook-test/7fba5100-1147-4e40-9d03-c617d8744d4a');
   const [showConfig, setShowConfig] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -320,6 +320,8 @@ export function TextEditor({ className }: TextEditorProps) {
             <TextComparison 
               originalText={originalContent}
               suggestedText={aiSuggestion}
+              onOriginalTextChange={setOriginalContent}
+              onSuggestedTextChange={setAiSuggestion}
             />
           </div>
         )}

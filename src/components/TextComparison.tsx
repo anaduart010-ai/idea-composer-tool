@@ -1,9 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Bold, Italic, List, Heading } from 'lucide-react';
 
 interface TextComparisonProps {
   originalText: string;
   suggestedText: string;
+  onOriginalTextChange?: (text: string) => void;
+  onSuggestedTextChange?: (text: string) => void;
 }
 
 interface DiffSegment {
@@ -11,11 +15,13 @@ interface DiffSegment {
   text: string;
 }
 
-export function TextComparison({ originalText, suggestedText }: TextComparisonProps) {
+export function TextComparison({ originalText, suggestedText, onOriginalTextChange, onSuggestedTextChange }: TextComparisonProps) {
+  const [editableOriginal, setEditableOriginal] = useState(originalText);
+  const [editableSuggested, setEditableSuggested] = useState(suggestedText);
   const diffs = useMemo(() => {
     // Algoritmo simples de diff por palavras
-    const originalWords = originalText.split(/(\s+)/);
-    const suggestedWords = suggestedText.split(/(\s+)/);
+    const originalWords = editableOriginal.split(/(\s+)/);
+    const suggestedWords = editableSuggested.split(/(\s+)/);
     
     const originalDiffs: DiffSegment[] = [];
     const suggestedDiffs: DiffSegment[] = [];
@@ -49,7 +55,44 @@ export function TextComparison({ originalText, suggestedText }: TextComparisonPr
     }
     
     return { originalDiffs, suggestedDiffs };
-  }, [originalText, suggestedText]);
+  }, [editableOriginal, editableSuggested]);
+
+  const formatText = (text: string, format: 'bold' | 'italic' | 'header' | 'list') => {
+    const selection = window.getSelection();
+    const selectedText = selection?.toString() || '';
+    
+    if (!selectedText) return text;
+    
+    let formattedText = '';
+    switch (format) {
+      case 'bold':
+        formattedText = `**${selectedText}**`;
+        break;
+      case 'italic':
+        formattedText = `*${selectedText}*`;
+        break;
+      case 'header':
+        formattedText = `# ${selectedText}`;
+        break;
+      case 'list':
+        formattedText = `- ${selectedText}`;
+        break;
+    }
+    
+    return text.replace(selectedText, formattedText);
+  };
+
+  const handleOriginalFormat = (format: 'bold' | 'italic' | 'header' | 'list') => {
+    const newText = formatText(editableOriginal, format);
+    setEditableOriginal(newText);
+    onOriginalTextChange?.(newText);
+  };
+
+  const handleSuggestedFormat = (format: 'bold' | 'italic' | 'header' | 'list') => {
+    const newText = formatText(editableSuggested, format);
+    setEditableSuggested(newText);
+    onSuggestedTextChange?.(newText);
+  };
 
   const renderDiff = (segments: DiffSegment[]) => {
     return segments.map((segment, index) => {
@@ -83,11 +126,30 @@ export function TextComparison({ originalText, suggestedText }: TextComparisonPr
             <div className="w-3 h-3 bg-removed rounded-full"></div>
             Texto Original
           </h4>
+          <div className="flex gap-1 mt-2">
+            <Button size="sm" variant="ghost" onClick={() => handleOriginalFormat('bold')}>
+              <Bold className="w-3 h-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => handleOriginalFormat('italic')}>
+              <Italic className="w-3 h-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => handleOriginalFormat('header')}>
+              <Heading className="w-3 h-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => handleOriginalFormat('list')}>
+              <List className="w-3 h-3" />
+            </Button>
+          </div>
         </div>
         <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto">
-          <div className="whitespace-pre-wrap font-mono">
-            {renderDiff(diffs.originalDiffs)}
-          </div>
+          <textarea
+            value={editableOriginal}
+            onChange={(e) => {
+              setEditableOriginal(e.target.value);
+              onOriginalTextChange?.(e.target.value);
+            }}
+            className="w-full h-64 p-3 border rounded bg-background text-foreground resize-none focus:ring-2 focus:ring-primary"
+          />
         </div>
       </Card>
 
@@ -97,26 +159,32 @@ export function TextComparison({ originalText, suggestedText }: TextComparisonPr
             <div className="w-3 h-3 bg-added rounded-full"></div>
             Sugestão da IA (via n8n)
           </h4>
-          <p className="text-xs text-muted-foreground mt-1">
-            Resultado processado pelo webhook
-          </p>
+          <div className="flex gap-1 mt-2">
+            <Button size="sm" variant="ghost" onClick={() => handleSuggestedFormat('bold')}>
+              <Bold className="w-3 h-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => handleSuggestedFormat('italic')}>
+              <Italic className="w-3 h-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => handleSuggestedFormat('header')}>
+              <Heading className="w-3 h-3" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => handleSuggestedFormat('list')}>
+              <List className="w-3 h-3" />
+            </Button>
+          </div>
         </div>
         <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto">
-          <div className="whitespace-pre-wrap font-mono">
-            {renderDiff(diffs.suggestedDiffs)}
-          </div>
+          <textarea
+            value={editableSuggested}
+            onChange={(e) => {
+              setEditableSuggested(e.target.value);
+              onSuggestedTextChange?.(e.target.value);
+            }}
+            className="w-full h-64 p-3 border rounded bg-background text-foreground resize-none focus:ring-2 focus:ring-primary"
+          />
         </div>
       </Card>
-
-      <div className="lg:col-span-2 mt-4">
-        <Card className="p-4 bg-yellow/10 border-yellow">
-          <h4 className="font-medium text-foreground mb-2">Resposta do Webhook n8n:</h4>
-          <div className="bg-background rounded p-3 border text-sm font-mono">
-            <div className="text-muted-foreground mb-1">Resultado processado:</div>
-            <div className="text-foreground">{suggestedText}</div>
-          </div>
-        </Card>
-      </div>
 
       <div className="lg:col-span-2 mt-4">
         <Card className="p-4 bg-muted/50">
