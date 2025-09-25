@@ -283,27 +283,12 @@ export function TextEditor({ className }: TextEditorProps) {
       <div className="flex-1 flex">
         {!showComparison ? (
           <div className="flex-1 p-4">
-            <div 
-              contentEditable
-              suppressContentEditableWarning
-              onInput={(e) => {
-                const content = e.currentTarget.textContent || '';
-                setContent(content);
-              }}
-              onKeyDown={(e) => {
-                // Melhor suporte ao Ctrl+Z e outras teclas
-                if (e.key === 'Tab') {
-                  e.preventDefault();
-                  document.execCommand('insertText', false, '  ');
-                }
-                // Suporte nativo ao Ctrl+Z funciona automaticamente com contentEditable
-              }}
-              className="w-full h-full min-h-[500px] resize-none bg-editor-background border-0 text-base leading-relaxed focus:ring-2 focus:ring-primary focus:outline-none p-4"
-              style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-              data-placeholder="Digite seu texto aqui ou faça upload de um arquivo..."
-            >
-              {content}
-            </div>
+            <Textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Digite seu texto aqui ou faça upload de um arquivo..."
+              className="w-full h-full min-h-[500px] resize-none bg-editor-background border-0 text-base leading-relaxed focus:ring-2 focus:ring-primary"
+            />
           </div>
         ) : (
           <div className="flex-1 flex flex-col p-4 gap-4">

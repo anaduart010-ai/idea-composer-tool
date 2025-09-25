@@ -19,112 +19,91 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
   const [editableOriginal, setEditableOriginal] = useState(originalText);
   const [editableSuggested, setEditableSuggested] = useState(suggestedText);
   const diffs = useMemo(() => {
-    // Algoritmo melhorado de diff por palavras
-    const originalWords = editableOriginal.split(/(\s+|[^\w\s])/);
-    const suggestedWords = editableSuggested.split(/(\s+|[^\w\s])/);
+    // Algoritmo simples de diff por palavras
+    const originalWords = editableOriginal.split(/(\s+)/);
+    const suggestedWords = editableSuggested.split(/(\s+)/);
     
     const originalDiffs: DiffSegment[] = [];
     const suggestedDiffs: DiffSegment[] = [];
     
-    // Algoritmo LCS simples para melhor comparação
-    const matrix = Array(originalWords.length + 1).fill(null).map(() => 
-      Array(suggestedWords.length + 1).fill(0)
-    );
+    let originalIndex = 0;
+    let suggestedIndex = 0;
     
-    // Construir matriz LCS
-    for (let i = 1; i <= originalWords.length; i++) {
-      for (let j = 1; j <= suggestedWords.length; j++) {
-        if (originalWords[i - 1] === suggestedWords[j - 1]) {
-          matrix[i][j] = matrix[i - 1][j - 1] + 1;
-        } else {
-          matrix[i][j] = Math.max(matrix[i - 1][j], matrix[i][j - 1]);
+    while (originalIndex < originalWords.length || suggestedIndex < suggestedWords.length) {
+      const originalWord = originalWords[originalIndex];
+      const suggestedWord = suggestedWords[suggestedIndex];
+      
+      if (originalWord === suggestedWord) {
+        // Palavras iguais
+        if (originalWord) {
+          originalDiffs.push({ type: 'unchanged', text: originalWord });
+          suggestedDiffs.push({ type: 'unchanged', text: suggestedWord });
         }
-      }
-    }
-    
-    // Rastrear diferenças
-    let i = originalWords.length;
-    let j = suggestedWords.length;
-    
-    while (i > 0 || j > 0) {
-      if (i > 0 && j > 0 && originalWords[i - 1] === suggestedWords[j - 1]) {
-        originalDiffs.unshift({ type: 'unchanged', text: originalWords[i - 1] });
-        suggestedDiffs.unshift({ type: 'unchanged', text: suggestedWords[j - 1] });
-        i--;
-        j--;
-      } else if (i > 0 && (j === 0 || matrix[i - 1][j] >= matrix[i][j - 1])) {
-        originalDiffs.unshift({ type: 'removed', text: originalWords[i - 1] });
-        i--;
-      } else if (j > 0) {
-        suggestedDiffs.unshift({ type: 'added', text: suggestedWords[j - 1] });
-        j--;
+        originalIndex++;
+        suggestedIndex++;
+      } else {
+        // Palavras diferentes - marcar como removida/adicionada
+        if (originalIndex < originalWords.length) {
+          originalDiffs.push({ type: 'removed', text: originalWord });
+          originalIndex++;
+        }
+        if (suggestedIndex < suggestedWords.length) {
+          suggestedDiffs.push({ type: 'added', text: suggestedWord });
+          suggestedIndex++;
+        }
       }
     }
     
     return { originalDiffs, suggestedDiffs };
   }, [editableOriginal, editableSuggested]);
 
-  const formatText = (editorElement: HTMLElement, format: 'bold' | 'italic' | 'header' | 'list') => {
+  const formatText = (text: string, format: 'bold' | 'italic' | 'header' | 'list') => {
     const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const range = selection.getRangeAt(0);
-    if (!editorElement.contains(range.commonAncestorContainer)) return;
-
-    const selectedText = selection.toString();
-    if (!selectedText) return;
-
+    const selectedText = selection?.toString() || '';
+    
+    if (!selectedText) return text;
+    
+    let formattedText = '';
     switch (format) {
       case 'bold':
-        document.execCommand('bold', false);
+        formattedText = `**${selectedText}**`;
         break;
       case 'italic':
-        document.execCommand('italic', false);
+        formattedText = `*${selectedText}*`;
         break;
       case 'header':
-        document.execCommand('formatBlock', false, 'h3');
+        formattedText = `# ${selectedText}`;
         break;
       case 'list':
-        document.execCommand('insertUnorderedList', false);
+        formattedText = `- ${selectedText}`;
         break;
     }
+    
+    return text.replace(selectedText, formattedText);
   };
 
   const handleOriginalFormat = (format: 'bold' | 'italic' | 'header' | 'list') => {
-    const editorElement = document.querySelector('[data-editor="original"]') as HTMLElement;
-    if (editorElement) {
-      formatText(editorElement, format);
-      // Atualizar estado com o conteúdo HTML
-      const content = editorElement.textContent || '';
-      setEditableOriginal(content);
-      onOriginalTextChange?.(content);
-    }
+    const newText = formatText(editableOriginal, format);
+    setEditableOriginal(newText);
+    onOriginalTextChange?.(newText);
   };
 
   const handleSuggestedFormat = (format: 'bold' | 'italic' | 'header' | 'list') => {
-    const editorElement = document.querySelector('[data-editor="suggested"]') as HTMLElement;
-    if (editorElement) {
-      formatText(editorElement, format);
-      // Atualizar estado com o conteúdo HTML
-      const content = editorElement.textContent || '';
-      setEditableSuggested(content);
-      onSuggestedTextChange?.(content);
-    }
+    const newText = formatText(editableSuggested, format);
+    setEditableSuggested(newText);
+    onSuggestedTextChange?.(newText);
   };
 
   const renderDiff = (segments: DiffSegment[]) => {
     return segments.map((segment, index) => {
       let className = '';
-      let style = {};
       
       switch (segment.type) {
         case 'added':
-          className = 'bg-added text-added-text px-1 rounded';
-          style = { backgroundColor: 'hsl(120, 60%, 90%)', color: 'hsl(120, 60%, 25%)' };
+          className = 'bg-added text-added-text';
           break;
         case 'removed':
-          className = 'bg-removed text-removed-text px-1 rounded';
-          style = { backgroundColor: 'hsl(0, 60%, 90%)', color: 'hsl(0, 60%, 25%)' };
+          className = 'bg-removed text-removed-text';
           break;
         case 'unchanged':
           className = '';
@@ -132,11 +111,11 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
       }
       
       return (
-        <span key={index} className={className} style={style}>
+        <span key={index} className={className}>
           {segment.text}
         </span>
       );
-    }).join('');
+    });
   };
 
   return (
@@ -163,24 +142,13 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
           </div>
         </div>
         <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto">
-          <div 
-            contentEditable
-            suppressContentEditableWarning
-            data-editor="original"
-            onInput={(e) => {
-              const content = e.currentTarget.textContent || '';
-              setEditableOriginal(content);
-              onOriginalTextChange?.(content);
+          <textarea
+            value={editableOriginal}
+            onChange={(e) => {
+              setEditableOriginal(e.target.value);
+              onOriginalTextChange?.(e.target.value);
             }}
-            onKeyDown={(e) => {
-              if (e.key === 'Tab') {
-                e.preventDefault();
-                document.execCommand('insertText', false, '  ');
-              }
-            }}
-            className="w-full h-64 p-3 border rounded bg-background text-foreground resize-none focus:ring-2 focus:ring-primary focus:outline-none"
-            style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-            dangerouslySetInnerHTML={{ __html: renderDiff(diffs.originalDiffs) }}
+            className="w-full h-64 p-3 border rounded bg-background text-foreground resize-none focus:ring-2 focus:ring-primary"
           />
         </div>
       </Card>
@@ -207,24 +175,13 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
           </div>
         </div>
         <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto">
-          <div 
-            contentEditable
-            suppressContentEditableWarning
-            data-editor="suggested"
-            onInput={(e) => {
-              const content = e.currentTarget.textContent || '';
-              setEditableSuggested(content);
-              onSuggestedTextChange?.(content);
+          <textarea
+            value={editableSuggested}
+            onChange={(e) => {
+              setEditableSuggested(e.target.value);
+              onSuggestedTextChange?.(e.target.value);
             }}
-            onKeyDown={(e) => {
-              if (e.key === 'Tab') {
-                e.preventDefault();
-                document.execCommand('insertText', false, '  ');
-              }
-            }}
-            className="w-full h-64 p-3 border rounded bg-background text-foreground resize-none focus:ring-2 focus:ring-primary focus:outline-none"
-            style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-            dangerouslySetInnerHTML={{ __html: renderDiff(diffs.suggestedDiffs) }}
+            className="w-full h-64 p-3 border rounded bg-background text-foreground resize-none focus:ring-2 focus:ring-primary"
           />
         </div>
       </Card>
