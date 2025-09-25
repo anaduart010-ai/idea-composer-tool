@@ -100,13 +100,13 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
       
       switch (segment.type) {
         case 'added':
-          className = 'bg-added text-added-text';
+          className = 'bg-green/20 text-foreground font-medium px-1 rounded';
           break;
         case 'removed':
-          className = 'bg-removed text-removed-text';
+          className = 'bg-destructive/20 text-foreground line-through px-1 rounded';
           break;
         case 'unchanged':
-          className = '';
+          className = 'text-foreground';
           break;
       }
       
@@ -123,84 +123,42 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
       <Card className="p-4 bg-card">
         <div className="mb-3">
           <h4 className="font-medium text-foreground flex items-center gap-2">
-            <div className="w-3 h-3 bg-removed rounded-full"></div>
+            <div className="w-3 h-3 bg-destructive rounded-full"></div>
             Texto Original
           </h4>
-          <div className="flex gap-1 mt-2">
-            <Button size="sm" variant="ghost" onClick={() => handleOriginalFormat('bold')}>
-              <Bold className="w-3 h-3" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => handleOriginalFormat('italic')}>
-              <Italic className="w-3 h-3" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => handleOriginalFormat('header')}>
-              <Heading className="w-3 h-3" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => handleOriginalFormat('list')}>
-              <List className="w-3 h-3" />
-            </Button>
-          </div>
         </div>
-        <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto">
-          <textarea
-            value={editableOriginal}
-            onChange={(e) => {
-              setEditableOriginal(e.target.value);
-              onOriginalTextChange?.(e.target.value);
-            }}
-            className="w-full h-64 p-3 border rounded bg-background text-foreground resize-none focus:ring-2 focus:ring-primary"
-          />
+        <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto p-3 border rounded bg-background min-h-64">
+          {renderDiff(diffs.originalDiffs)}
         </div>
       </Card>
 
       <Card className="p-4 bg-card">
         <div className="mb-3">
           <h4 className="font-medium text-foreground flex items-center gap-2">
-            <div className="w-3 h-3 bg-added rounded-full"></div>
+            <div className="w-3 h-3 bg-green rounded-full"></div>
             Sugestão da IA (via n8n)
           </h4>
-          <div className="flex gap-1 mt-2">
-            <Button size="sm" variant="ghost" onClick={() => handleSuggestedFormat('bold')}>
-              <Bold className="w-3 h-3" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => handleSuggestedFormat('italic')}>
-              <Italic className="w-3 h-3" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => handleSuggestedFormat('header')}>
-              <Heading className="w-3 h-3" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => handleSuggestedFormat('list')}>
-              <List className="w-3 h-3" />
-            </Button>
-          </div>
         </div>
-        <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto">
-          <textarea
-            value={editableSuggested}
-            onChange={(e) => {
-              setEditableSuggested(e.target.value);
-              onSuggestedTextChange?.(e.target.value);
-            }}
-            className="w-full h-64 p-3 border rounded bg-background text-foreground resize-none focus:ring-2 focus:ring-primary"
-          />
+        <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto p-3 border rounded bg-background min-h-64">
+          {renderDiff(diffs.suggestedDiffs)}
         </div>
       </Card>
 
       <div className="lg:col-span-2 mt-4">
         <Card className="p-4 bg-muted/50">
-          <h4 className="font-medium text-foreground mb-2">Resumo das Mudanças:</h4>
+          <h4 className="font-medium text-foreground mb-2">Legenda das Mudanças:</h4>
           <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-added rounded-full"></div>
-              <span className="text-added-text">Adições da IA</span>
+              <div className="w-4 h-4 bg-green rounded"></div>
+              <span className="text-foreground">Texto adicionado pela IA</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-removed rounded-full"></div>
-              <span className="text-removed-text">Remoções do original</span>
+              <div className="w-4 h-4 bg-destructive rounded"></div>
+              <span className="text-foreground">Texto removido do original</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-muted rounded-full"></div>
-              <span className="text-muted-foreground">Texto mantido</span>
+              <div className="w-4 h-4 bg-muted border rounded"></div>
+              <span className="text-muted-foreground">Texto mantido igual</span>
             </div>
           </div>
         </Card>
