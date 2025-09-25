@@ -114,7 +114,7 @@ export function TextEditor({ className }: TextEditorProps) {
       
       toast({
         title: "Análise concluída",
-        description: `IA processou o texto via n8n. Resultado: "${aiResponse.substring(0, 50)}${aiResponse.length > 50 ? '...' : ''}"`,
+        description: `Aqui está o texto. Resultado: "${aiResponse.substring(0, 50)}${aiResponse.length > 50 ? '...' : ''}"`,
       });
     } catch (error) {
       toast({
