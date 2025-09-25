@@ -129,4 +129,56 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground font-work-sans;
   }
+
+  /* ContentEditable placeholder styling */
+  [contenteditable]:empty:before {
+    content: attr(data-placeholder);
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+  }
+
+  /* Highlight colors for text comparison */
+  .bg-added {
+    background-color: hsl(120, 60%, 90%) !important;
+    border-radius: 4px;
+    padding: 0 2px;
+  }
+
+  .text-added-text {
+    color: hsl(120, 60%, 25%) !important;
+  }
+
+  .bg-removed {
+    background-color: hsl(0, 60%, 90%) !important;
+    border-radius: 4px;
+    padding: 0 2px;
+  }
+
+  .text-removed-text {
+    color: hsl(0, 60%, 25%) !important;
+  }
+
+  /* Rich text formatting styles */
+  [contenteditable] strong, [contenteditable] b {
+    font-weight: bold !important;
+  }
+
+  [contenteditable] em, [contenteditable] i {
+    font-style: italic !important;
+  }
+
+  [contenteditable] h1, [contenteditable] h2, [contenteditable] h3, [contenteditable] h4, [contenteditable] h5, [contenteditable] h6 {
+    font-weight: bold !important;
+    font-size: 1.2em !important;
+    margin: 0.5em 0 !important;
+  }
+
+  [contenteditable] ul, [contenteditable] ol {
+    margin: 0.5em 0 !important;
+    padding-left: 1.5em !important;
+  }
+
+  [contenteditable] li {
+    margin: 0.25em 0 !important;
+  }
 }
