@@ -4,7 +4,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
 import { TableKit } from '@tiptap/extension-table';
 import Youtube from '@tiptap/extension-youtube';
-import { Gapcursor } from '@tiptap/extension-gapcursor';
+import { useEffect } from 'react';
 import { 
   Bold, 
   Italic, 
@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 interface RichTextEditorProps {
   content: string;
@@ -43,6 +43,7 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
   const [imageUrl, setImageUrl] = useState('');
   const [showVideoInput, setShowVideoInput] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
+  const isUpdatingFromProp = useRef(false);
 
   const editor = useEditor({
     extensions: [
@@ -51,7 +52,6 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
           levels: [1, 2, 3],
         },
       }),
-      Gapcursor,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
@@ -88,9 +88,11 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
         height: 360,
       }),
     ],
-    content,
+    content: '',
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      if (!isUpdatingFromProp.current) {
+        onChange(editor.getHTML());
+      }
     },
     editorProps: {
       attributes: {
@@ -98,6 +100,15 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
       },
     },
   });
+
+  // Atualiza o conteúdo do editor quando o prop content mudar
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      isUpdatingFromProp.current = true;
+      editor.commands.setContent(content);
+      isUpdatingFromProp.current = false;
+    }
+  }, [content, editor]);
 
   if (!editor) {
     return null;
