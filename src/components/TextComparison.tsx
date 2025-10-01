@@ -1,7 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Bold, Italic, List, Heading } from 'lucide-react';
+import { RichTextEditor } from './RichTextEditor';
 
 interface TextComparisonProps {
   originalText: string;
@@ -10,21 +9,24 @@ interface TextComparisonProps {
   onSuggestedTextChange?: (text: string) => void;
 }
 
-interface DiffSegment {
-  type: 'unchanged' | 'added' | 'removed';
-  text: string;
-}
-
 export function TextComparison({ originalText, suggestedText, onOriginalTextChange, onSuggestedTextChange }: TextComparisonProps) {
-  const [editableOriginal, setEditableOriginal] = useState(originalText);
-  const [editableSuggested, setEditableSuggested] = useState(suggestedText);
-  const diffs = useMemo(() => {
+  // Função para criar HTML com destaque de diferenças
+  const createDiffHTML = useMemo(() => {
+    const stripHTML = (html: string) => {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    };
+
+    const originalPlainText = stripHTML(originalText);
+    const suggestedPlainText = stripHTML(suggestedText);
+
     // Algoritmo simples de diff por palavras
-    const originalWords = editableOriginal.split(/(\s+)/);
-    const suggestedWords = editableSuggested.split(/(\s+)/);
+    const originalWords = originalPlainText.split(/(\s+)/);
+    const suggestedWords = suggestedPlainText.split(/(\s+)/);
     
-    const originalDiffs: DiffSegment[] = [];
-    const suggestedDiffs: DiffSegment[] = [];
+    let originalHTML = '';
+    let suggestedHTML = '';
     
     let originalIndex = 0;
     let suggestedIndex = 0;
@@ -36,87 +38,26 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
       if (originalWord === suggestedWord) {
         // Palavras iguais
         if (originalWord) {
-          originalDiffs.push({ type: 'unchanged', text: originalWord });
-          suggestedDiffs.push({ type: 'unchanged', text: suggestedWord });
+          originalHTML += originalWord;
+          suggestedHTML += suggestedWord;
         }
         originalIndex++;
         suggestedIndex++;
       } else {
         // Palavras diferentes - marcar como removida/adicionada
         if (originalIndex < originalWords.length) {
-          originalDiffs.push({ type: 'removed', text: originalWord });
+          originalHTML += `<span style="background-color: rgba(239, 68, 68, 0.2); text-decoration: line-through; padding: 0 2px; border-radius: 2px;">${originalWord}</span>`;
           originalIndex++;
         }
         if (suggestedIndex < suggestedWords.length) {
-          suggestedDiffs.push({ type: 'added', text: suggestedWord });
+          suggestedHTML += `<span style="background-color: rgba(34, 197, 94, 0.2); font-weight: 500; padding: 0 2px; border-radius: 2px;">${suggestedWord}</span>`;
           suggestedIndex++;
         }
       }
     }
     
-    return { originalDiffs, suggestedDiffs };
-  }, [editableOriginal, editableSuggested]);
-
-  const formatText = (text: string, format: 'bold' | 'italic' | 'header' | 'list') => {
-    const selection = window.getSelection();
-    const selectedText = selection?.toString() || '';
-    
-    if (!selectedText) return text;
-    
-    let formattedText = '';
-    switch (format) {
-      case 'bold':
-        formattedText = `**${selectedText}**`;
-        break;
-      case 'italic':
-        formattedText = `*${selectedText}*`;
-        break;
-      case 'header':
-        formattedText = `# ${selectedText}`;
-        break;
-      case 'list':
-        formattedText = `- ${selectedText}`;
-        break;
-    }
-    
-    return text.replace(selectedText, formattedText);
-  };
-
-  const handleOriginalFormat = (format: 'bold' | 'italic' | 'header' | 'list') => {
-    const newText = formatText(editableOriginal, format);
-    setEditableOriginal(newText);
-    onOriginalTextChange?.(newText);
-  };
-
-  const handleSuggestedFormat = (format: 'bold' | 'italic' | 'header' | 'list') => {
-    const newText = formatText(editableSuggested, format);
-    setEditableSuggested(newText);
-    onSuggestedTextChange?.(newText);
-  };
-
-  const renderDiff = (segments: DiffSegment[]) => {
-    return segments.map((segment, index) => {
-      let className = '';
-      
-      switch (segment.type) {
-        case 'added':
-          className = 'bg-green/20 text-foreground font-medium px-1 rounded';
-          break;
-        case 'removed':
-          className = 'bg-destructive/20 text-foreground line-through px-1 rounded';
-          break;
-        case 'unchanged':
-          className = 'text-foreground';
-          break;
-      }
-      
-      return (
-        <span key={index} className={className}>
-          {segment.text}
-        </span>
-      );
-    });
-  };
+    return { originalHTML, suggestedHTML };
+  }, [originalText, suggestedText]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
@@ -124,42 +65,43 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
         <div className="mb-3">
           <h4 className="font-medium text-foreground flex items-center gap-2">
             <div className="w-3 h-3 bg-destructive rounded-full"></div>
-            Texto Original
+            Texto Original (Editável)
           </h4>
+          <p className="text-xs text-muted-foreground mt-1">
+            Vermelho = texto removido pela IA
+          </p>
         </div>
-        <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto p-3 border rounded bg-background min-h-64">
-          {renderDiff(diffs.originalDiffs)}
-        </div>
+        <RichTextEditor
+          content={createDiffHTML.originalHTML}
+          onChange={(html) => onOriginalTextChange?.(html)}
+          placeholder="Texto original..."
+        />
       </Card>
 
       <Card className="p-4 bg-card">
         <div className="mb-3">
           <h4 className="font-medium text-foreground flex items-center gap-2">
             <div className="w-3 h-3 bg-green rounded-full"></div>
-            Sugestão da IA (via n8n)
+            Sugestão da IA (Editável)
           </h4>
+          <p className="text-xs text-muted-foreground mt-1">
+            Verde = texto adicionado pela IA
+          </p>
         </div>
-        <div className="prose max-w-none text-sm leading-relaxed h-full overflow-auto p-3 border rounded bg-background min-h-64">
-          {renderDiff(diffs.suggestedDiffs)}
-        </div>
+        <RichTextEditor
+          content={createDiffHTML.suggestedHTML}
+          onChange={(html) => onSuggestedTextChange?.(html)}
+          placeholder="Sugestão da IA..."
+        />
       </Card>
 
       <div className="lg:col-span-2 mt-4">
         <Card className="p-4 bg-muted/50">
-          <h4 className="font-medium text-foreground mb-2">Legenda das Mudanças:</h4>
-          <div className="flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-green rounded"></div>
-              <span className="text-foreground">Texto adicionado pela IA</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-destructive rounded"></div>
-              <span className="text-foreground">Texto removido do original</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-muted border rounded"></div>
-              <span className="text-muted-foreground">Texto mantido igual</span>
-            </div>
+          <h4 className="font-medium text-foreground mb-2">💡 Dicas:</h4>
+          <div className="text-sm text-muted-foreground space-y-1">
+            <p>• Você pode editar ambos os textos diretamente usando a barra de ferramentas completa</p>
+            <p>• Use Ctrl+Z para desfazer e Ctrl+Y para refazer</p>
+            <p>• As mudanças destacadas mostram diferenças: <span className="bg-destructive/20 px-1 rounded">vermelho riscado</span> = removido, <span className="bg-green/20 px-1 rounded font-medium">verde</span> = adicionado</p>
           </div>
         </Card>
       </div>

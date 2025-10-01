@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
-import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from './RichTextEditor';
 import { 
   Save, 
   Download, 
@@ -106,8 +106,16 @@ export function TextEditor({ className }: TextEditorProps) {
       console.log('Resposta do webhook:', result); // Debug log
       
       // Captura a resposta do webhook - tenta vários campos possíveis
-      const aiResponse = result.output || result.suggestion || result.text || result.response || 'Nenhuma sugestão retornada';
+      let aiResponse = result.output || result.suggestion || result.text || result.response || 'Nenhuma sugestão retornada';
       console.log('Resultado capturado:', aiResponse); // Debug log
+      
+      // Remove a mensagem "Resposta do Webhook n8n: Resultado processado:" se existir
+      if (typeof aiResponse === 'string') {
+        aiResponse = aiResponse
+          .replace(/Resposta do Webhook n8n:\s*/gi, '')
+          .replace(/Resultado processado:\s*/gi, '')
+          .trim();
+      }
       
       setAiSuggestion(aiResponse);
       setShowComparison(true);
@@ -283,11 +291,11 @@ export function TextEditor({ className }: TextEditorProps) {
       <div className="flex-1 flex">
         {!showComparison ? (
           <div className="flex-1 p-4">
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+            <RichTextEditor
+              content={content}
+              onChange={setContent}
               placeholder="Digite seu texto aqui ou faça upload de um arquivo..."
-              className="w-full h-full min-h-[500px] resize-none bg-editor-background border-0 text-base leading-relaxed focus:ring-2 focus:ring-primary"
+              className="w-full h-full"
             />
           </div>
         ) : (
