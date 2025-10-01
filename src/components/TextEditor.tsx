@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,7 +32,32 @@ export function TextEditor({ className }: TextEditorProps) {
   const [showComparison, setShowComparison] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState('https://analu99.app.n8n.cloud/webhook-test/7fba5100-1147-4e40-9d03-c617d8744d4a');
   const [showConfig, setShowConfig] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+const fileInputRef = useRef<HTMLInputElement>(null);
+
+useEffect(() => {
+  try {
+    const saved = localStorage.getItem('rte:content');
+    if (saved !== null) setContent(saved);
+    const savedWebhook = localStorage.getItem('rte:webhookUrl');
+    if (savedWebhook !== null) setWebhookUrl(savedWebhook);
+  } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
+useEffect(() => {
+  const id = setTimeout(() => {
+    try {
+      localStorage.setItem('rte:content', content);
+    } catch {}
+  }, 300);
+  return () => clearTimeout(id);
+}, [content]);
+
+useEffect(() => {
+  try {
+    localStorage.setItem('rte:webhookUrl', webhookUrl);
+  } catch {}
+}, [webhookUrl]);
 
   const handleSave = useCallback(() => {
     // Implementar lógica de salvamento
