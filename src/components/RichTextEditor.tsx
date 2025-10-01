@@ -1,14 +1,10 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
-import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
-import { Table } from '@tiptap/extension-table';
-import { TableRow } from '@tiptap/extension-table-row';
-import { TableCell } from '@tiptap/extension-table-cell';
-import { TableHeader } from '@tiptap/extension-table-header';
+import { TableKit } from '@tiptap/extension-table';
 import Youtube from '@tiptap/extension-youtube';
+import { Gapcursor } from '@tiptap/extension-gapcursor';
 import { 
   Bold, 
   Italic, 
@@ -55,36 +51,36 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
           levels: [1, 2, 3],
         },
       }),
-      Underline,
+      Gapcursor,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-primary underline cursor-pointer',
-        },
       }),
       Image.configure({
         HTMLAttributes: {
           class: 'max-w-full h-auto rounded',
         },
       }),
-      Table.configure({
-        resizable: true,
-        HTMLAttributes: {
-          class: 'border-collapse table-auto w-full',
+      TableKit.configure({
+        table: {
+          resizable: true,
+          HTMLAttributes: {
+            class: 'border-collapse table-auto w-full',
+          },
         },
-      }),
-      TableRow,
-      TableHeader.configure({
-        HTMLAttributes: {
-          class: 'border border-border bg-muted font-bold p-2',
+        tableRow: {
+          HTMLAttributes: {
+            class: 'border border-border',
+          },
         },
-      }),
-      TableCell.configure({
-        HTMLAttributes: {
-          class: 'border border-border p-2',
+        tableHeader: {
+          HTMLAttributes: {
+            class: 'border border-border bg-muted font-bold p-2',
+          },
+        },
+        tableCell: {
+          HTMLAttributes: {
+            class: 'border border-border p-2',
+          },
         },
       }),
       Youtube.configure({
@@ -109,7 +105,7 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
 
   const addLink = () => {
     if (linkUrl) {
-      editor.chain().focus().setLink({ href: linkUrl }).run();
+      editor.chain().focus().extendMarkRange('link').setLink({ href: linkUrl }).run();
       setLinkUrl('');
       setShowLinkInput(false);
     }
