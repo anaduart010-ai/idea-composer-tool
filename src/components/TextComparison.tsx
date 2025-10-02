@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { RichTextEditor } from './RichTextEditor';
+import DiffMatchPatch from 'diff-match-patch';
 
 interface TextComparisonProps {
   originalText: string;
@@ -10,57 +11,37 @@ interface TextComparisonProps {
 }
 
 export function TextComparison({ originalText, suggestedText, onOriginalTextChange, onSuggestedTextChange }: TextComparisonProps) {
-  // Função para criar HTML com destaque de diferenças
-  const createDiffHTML = useMemo(() => {
-    const stripHTML = (html: string) => {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      return tmp.textContent || tmp.innerText || '';
-    };
-
-    const originalPlainText = stripHTML(originalText);
-    const suggestedPlainText = stripHTML(suggestedText);
-
-    // Algoritmo simples de diff por palavras
-    const originalWords = originalPlainText.split(/(\s+)/);
-    const suggestedWords = suggestedPlainText.split(/(\s+)/);
-    
-    let originalHTML = '';
-    let suggestedHTML = '';
-    
-    let originalIndex = 0;
-    let suggestedIndex = 0;
-    
-    while (originalIndex < originalWords.length || suggestedIndex < suggestedWords.length) {
-      const originalWord = originalWords[originalIndex];
-      const suggestedWord = suggestedWords[suggestedIndex];
-      
-      if (originalWord === suggestedWord) {
-        // Palavras iguais
-        if (originalWord) {
-          originalHTML += originalWord;
-          suggestedHTML += suggestedWord;
-        }
-        originalIndex++;
-        suggestedIndex++;
-      } else {
-        // Palavras diferentes - marcar como removida/adicionada
-        if (originalIndex < originalWords.length) {
-          originalHTML += `<span style="background-color: rgba(239, 68, 68, 0.2); text-decoration: line-through; padding: 0 2px; border-radius: 2px;">${originalWord}</span>`;
-          originalIndex++;
-        }
-        if (suggestedIndex < suggestedWords.length) {
-          suggestedHTML += `<span style="background-color: rgba(34, 197, 94, 0.2); font-weight: 500; padding: 0 2px; border-radius: 2px;">${suggestedWord}</span>`;
-          suggestedIndex++;
-        }
-      }
+  const { originalWithDiff, suggestedWithDiff } = useMemo(() => {
+    if (!originalText && !suggestedText) {
+      return { originalWithDiff: '', suggestedWithDiff: '' };
     }
-    
-    return { originalHTML, suggestedHTML };
+
+    const dmp = new DiffMatchPatch();
+    const diffs = dmp.diff_main(originalText, suggestedText);
+    dmp.diff_cleanupSemantic(diffs);
+
+    let originalWithDiff = '';
+    let suggestedWithDiff = '';
+
+    diffs.forEach(([operation, text]) => {
+      if (operation === 0) {
+        // Texto igual - mantém em ambos sem highlight
+        originalWithDiff += text;
+        suggestedWithDiff += text;
+      } else if (operation === -1) {
+        // Texto removido - mostrar em vermelho riscado no original
+        originalWithDiff += `<mark style="background-color: rgba(239, 68, 68, 0.25); text-decoration: line-through; padding: 0 3px; border-radius: 3px;">${text}</mark>`;
+      } else if (operation === 1) {
+        // Texto adicionado - mostrar em verde na sugestão
+        suggestedWithDiff += `<mark style="background-color: rgba(34, 197, 94, 0.25); font-weight: 500; padding: 0 3px; border-radius: 3px;">${text}</mark>`;
+      }
+    });
+
+    return { originalWithDiff, suggestedWithDiff };
   }, [originalText, suggestedText]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
       <Card className="p-4 bg-card">
         <div className="mb-3">
           <h4 className="font-medium text-foreground flex items-center gap-2">
@@ -72,7 +53,7 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
           </p>
         </div>
         <RichTextEditor
-          content={createDiffHTML.originalHTML}
+          content={originalWithDiff}
           onChange={(html) => onOriginalTextChange?.(html)}
           placeholder="Texto original..."
         />
@@ -89,13 +70,13 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
           </p>
         </div>
         <RichTextEditor
-          content={createDiffHTML.suggestedHTML}
+          content={suggestedWithDiff}
           onChange={(html) => onSuggestedTextChange?.(html)}
           placeholder="Sugestão da IA..."
         />
       </Card>
 
-      <div className="lg:col-span-2 mt-4">
+      <div className="md:col-span-2 mt-4">
         <Card className="p-4 bg-muted/50">
           <h4 className="font-medium text-foreground mb-2">💡 Dicas:</h4>
           <div className="text-sm text-muted-foreground space-y-1">
