@@ -10,65 +10,15 @@ interface TextComparisonProps {
   onSuggestedTextChange?: (text: string) => void;
 }
 
-// Função para converter markdown básico em HTML
-function markdownToHtml(text: string): string {
-  if (!text) return '';
-  
-  let html = text;
-  
-  // Converter **texto** em <strong>texto</strong>
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  
-  // Converter listas com bullets (* item ou - item)
-  const lines = html.split('\n');
-  const processedLines: string[] = [];
-  let inList = false;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    // Detectar item de lista
-    if (line.match(/^[\*\-]\s+(.+)/)) {
-      const content = line.replace(/^[\*\-]\s+/, '');
-      if (!inList) {
-        processedLines.push('<ul>');
-        inList = true;
-      }
-      processedLines.push(`<li>${content}</li>`);
-    } else {
-      // Fechar lista se estava aberta
-      if (inList) {
-        processedLines.push('</ul>');
-        inList = false;
-      }
-      
-      // Adicionar parágrafo se não for linha vazia
-      if (line) {
-        processedLines.push(`<p>${line}</p>`);
-      }
-    }
-  }
-  
-  // Fechar lista se ficou aberta no final
-  if (inList) {
-    processedLines.push('</ul>');
-  }
-  
-  return processedLines.join('');
-}
-
 export function TextComparison({ originalText, suggestedText, onOriginalTextChange, onSuggestedTextChange }: TextComparisonProps) {
   const { originalWithDiff, suggestedWithDiff } = useMemo(() => {
     if (!originalText && !suggestedText) {
       return { originalWithDiff: '', suggestedWithDiff: '' };
     }
 
-    // Converter markdown para HTML primeiro
-    const originalHtml = markdownToHtml(originalText);
-    const suggestedHtml = markdownToHtml(suggestedText);
-
+    // Textos já vêm em HTML, não precisa converter
     const dmp = new DiffMatchPatch();
-    const diffs = dmp.diff_main(originalHtml, suggestedHtml);
+    const diffs = dmp.diff_main(originalText, suggestedText);
     dmp.diff_cleanupSemantic(diffs);
 
     let originalWithDiff = '';

@@ -120,7 +120,11 @@ useEffect(() => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: content }),
+        body: JSON.stringify({ 
+          text: content,
+          format: 'html',
+          instructions: 'Retorne a resposta em HTML formatado, mantendo tags como <p>, <strong>, <ul>, <li>, etc. Não use markdown.'
+        }),
       });
 
       if (!response.ok) {
