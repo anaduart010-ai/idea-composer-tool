@@ -58,10 +58,10 @@ All colors MUST be HSL.
     --button-hover: 343 93% 52%;
     
     /* Comparison colors for AI analysis */
-    --added: 120 70% 85%; /* Verde claro visível */
-    --added-text: 120 80% 25%; /* Verde escuro para contraste */
-    --removed: 0 85% 85%; /* Vermelho claro visível */
-    --removed-text: 0 85% 35%; /* Vermelho escuro para contraste */
+    --added: 120 60% 90%;
+    --added-text: 120 60% 25%;
+    --removed: 0 60% 90%;
+    --removed-text: 0 60% 25%;
 
     --radius: 0.75rem;
 
