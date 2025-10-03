@@ -30,11 +30,11 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
         originalWithDiff += text;
         suggestedWithDiff += text;
       } else if (operation === -1) {
-        // Texto removido - mostrar em vermelho riscado no original usando tokens do design system
-        originalWithDiff += `<mark style="background-color: hsl(var(--removed)); color: hsl(var(--removed-text)); text-decoration: line-through; padding: 0 4px; border-radius: 3px;">${text}</mark>`;
+        // Texto removido - mostrar em vermelho riscado no original
+        originalWithDiff += `<mark style="background-color: hsl(var(--removed)); color: hsl(var(--removed-text)); text-decoration: line-through; padding: 2px 4px; border-radius: 3px;">${text}</mark>`;
       } else if (operation === 1) {
-        // Texto adicionado - mostrar em verde na sugestão usando tokens do design system
-        suggestedWithDiff += `<mark style="background-color: hsl(var(--added)); color: hsl(var(--added-text)); font-weight: 500; padding: 0 4px; border-radius: 3px;">${text}</mark>`;
+        // Texto adicionado - mostrar em verde claro na sugestão
+        suggestedWithDiff += `<mark style="background-color: hsl(var(--added)); color: hsl(var(--added-text)); padding: 2px 4px; border-radius: 3px;">${text}</mark>`;
       }
     });
 
