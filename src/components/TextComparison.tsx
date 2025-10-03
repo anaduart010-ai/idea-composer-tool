@@ -31,10 +31,10 @@ export function TextComparison({ originalText, suggestedText, onOriginalTextChan
         suggestedWithDiff += text;
       } else if (operation === -1) {
         // Texto removido - vermelho riscado no original
-        originalWithDiff += `<mark style="background-color: hsl(var(--removed)); color: hsl(var(--removed-text)); text-decoration: line-through; text-decoration-thickness: 2px; padding: 2px 4px; border-radius: 3px; font-weight: inherit;">${text}</mark>`;
+        originalWithDiff += `<s><mark style="background-color: hsl(var(--removed)); padding: 2px 4px; border-radius: 3px;">${text}</mark></s>`;
       } else if (operation === 1) {
         // Texto adicionado - verde na sugestão
-        suggestedWithDiff += `<mark style="background-color: hsl(var(--added)); color: hsl(var(--added-text)); padding: 2px 4px; border-radius: 3px; font-weight: inherit;">${text}</mark>`;
+        suggestedWithDiff += `<mark style="background-color: hsl(var(--added)); padding: 2px 4px; border-radius: 3px;">${text}</mark>`;
       }
     });
 

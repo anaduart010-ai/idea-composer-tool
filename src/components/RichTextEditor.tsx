@@ -4,6 +4,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import Image from '@tiptap/extension-image';
 import { TableKit } from '@tiptap/extension-table';
 import Youtube from '@tiptap/extension-youtube';
+import Highlight from '@tiptap/extension-highlight';
 import { useEffect } from 'react';
 import { 
   Bold, 
@@ -86,6 +87,9 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
       Youtube.configure({
         width: 640,
         height: 360,
+      }),
+      Highlight.configure({
+        multicolor: true,
       }),
     ],
     content: '',
