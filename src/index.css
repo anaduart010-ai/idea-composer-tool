@@ -245,21 +245,3 @@ All colors MUST be HSL.
   background: none;
   padding: 0;
 }
-
-/* Estilos para diferenças de texto - Comparação AI */
-.diff-removed {
-  background-color: hsl(var(--removed));
-  color: hsl(var(--removed-text));
-  padding: 2px 4px;
-  border-radius: 3px;
-  text-decoration: line-through;
-  text-decoration-color: hsl(var(--removed-text));
-  text-decoration-thickness: 2px;
-}
-
-.diff-added {
-  background-color: hsl(var(--added));
-  color: hsl(var(--added-text));
-  padding: 2px 4px;
-  border-radius: 3px;
-}
